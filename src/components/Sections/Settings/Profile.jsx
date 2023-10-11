@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import Upload from '../../../assets/upload.svg';
 import UploadWhiteIcon from '../../../assets/darkMode/uploadIcon.svg';
-import profile from '../../../assets/defaultProfile.svg';
+import defaultImage from '../../../assets/defaultImage.svg';
 import twitter from '../../../assets/twitterBlue.svg';
 import websiteIcon from '../../../assets/websiteIcon.svg';
 import twitterWhite from '../../../assets/darkMode/twitterIcon.svg';
@@ -59,7 +59,7 @@ const Profile = () => {
     username: auth.username,
     isPublic: isPublic,
     email: auth.userData.email,
-    bio: auth.userData.bio ? auth.userData.email : '',
+    bio: auth.userData.bio,
   });
   // user social links
   const [userSocialLinks, setUserSocialLinks] = useState({
@@ -97,6 +97,56 @@ const Profile = () => {
       }
     }
   };
+  const isValidSocialLink = linksObject => {
+    let isTwitterUrlCorrect = false;
+    let isWebsiteUrlCorrect = false;
+    if (linksObject.twitterUrl === '' && linksObject.websiteUrl === '') {
+      return true;
+    }
+
+    if (linksObject.twitterUrl !== '') {
+      if (
+        linksObject.twitterUrl.startsWith('https://twitter.com') ||
+        linksObject.twitterUrl.startsWith('https://x.com')
+      ) {
+        isTwitterUrlCorrect = true;
+      } else {
+        toast.error('Invalid Twitter Link', {
+          style: {
+            border: '1px solid #4B4C63',
+            padding: '6px',
+            color: '#713200',
+            boxShadow: 'none',
+            width: 'max-content',
+            minWidth: 'max-content',
+          },
+        });
+        return false;
+      }
+    }
+
+    if (linksObject.websiteUrl !== '') {
+      if (linksObject.websiteUrl.startsWith('https://')) {
+        isWebsiteUrlCorrect = true;
+      } else {
+        toast.error('Invalid Website Link', {
+          style: {
+            border: '1px solid #4B4C63',
+            padding: '6px',
+            color: '#713200',
+            boxShadow: 'none',
+            width: 'max-content',
+            minWidth: 'max-content',
+          },
+        });
+        return false;
+      }
+    }
+
+    if (isTwitterUrlCorrect && isWebsiteUrlCorrect) {
+      return true;
+    }
+  };
   // Edit user details handler
   const onChangeUserData = e => {
     e.preventDefault();
@@ -131,6 +181,7 @@ const Profile = () => {
       username: auth.username,
       isPublic: auth.userData.isPublic,
       email: auth.userData.email,
+      bio: auth.userData.bio,
     };
     const setSocial = {
       twitterUrl: auth.userData.socials[0],
@@ -159,6 +210,10 @@ const Profile = () => {
           minWidth: 'max-content',
         },
       });
+      return;
+    }
+    const isSocialLinkCorrect = isValidSocialLink(userSocialLinks);
+    if (isSocialLinkCorrect === false) {
       return;
     }
     try {
@@ -198,6 +253,7 @@ const Profile = () => {
             profilePic: userResponse.data.data.profilePic,
             isPublic: userResponse.data.data.isPublic,
             socials: userResponse.data.data.socials,
+            bio: userResponse.data.data.bio,
           },
         })
       );
@@ -228,7 +284,9 @@ const Profile = () => {
         {/* Profile Image */}
         <div className="flex items-center justify-start w-full gap-6">
           <img
-            src={auth.userData.profilePic}
+            src={
+              auth.userData.profilePic ? auth.userData.profilePic : defaultImage
+            }
             ref={profilePicRef}
             alt=""
             className="w-20 h-20 rounded-full"

@@ -14,6 +14,7 @@ import { SortActions } from '../components/Common/ActiondropDown';
 import Search from '../components/Common/Search';
 import { useContext } from 'react';
 import { switchMode } from '../hooks/switchMode';
+import useDropdown from '../hooks/useDropdown';
 
 const SavedCollection = ({ windowWidth }) => {
   const dispatch = useDispatch();
@@ -21,6 +22,8 @@ const SavedCollection = ({ windowWidth }) => {
   const [query, setQuery] = useState('');
   const auth = useSelector(state => state.auth);
   const { selectedMode } = useContext(switchMode);
+  const { isSortByDropdownOpen, toggleSortByDropdown } = useDropdown();
+
   useEffect(() => {
     dispatch(getSaveCollectionOfUser(auth.userId));
   }, [dispatch]);
@@ -57,9 +60,13 @@ const SavedCollection = ({ windowWidth }) => {
           <div className=" w-[calc(100%-212px)]">
             <Search query={query} setQuery={setQuery} />
           </div>
-
           {/* sort by */}
-          <SortActions name="Sort By" menuItems={menuItem} />
+          <SortActions
+            name="Sort By"
+            menuItems={menuItem}
+            isOpen={isSortByDropdownOpen}
+            toggleDropDown={toggleSortByDropdown}
+          />{' '}
         </div>
       </div>
 
@@ -100,11 +107,13 @@ const SavedCollection = ({ windowWidth }) => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col self-center items-center justify-center w-full h-full">
-            <p className="mb-5 text-5xl text-textPrimary">
-              No Collection Found
-            </p>
-            <p className="text-textPrimary">You can save from explore page</p>
+          <div
+            className={`flex flex-col self-center items-center justify-center w-full h-full ${
+              selectedMode === 'dark' ? 'text-neutral-50' : 'text-black'
+            }`}
+          >
+            <p className="mb-5 text-5xl">No Collection Found</p>
+            <p>You can save from explore page</p>
           </div>
         )}
       </div>
